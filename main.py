@@ -31,7 +31,7 @@ def main():
 	except Exception:
 		print('Ошибка во входе в аккаунт.\nПроверьте имя пользователя и пароль.')
 
-	start_value = 1000
+	start_value = 10000
 	value = start_value
 	bet_counter = 0
 	while True:
