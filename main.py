@@ -89,7 +89,7 @@ def main():
 
 
 	start_balance = get_balance(url=API_URL, sessin_cookies=cookie)
-	start_value = 1000
+	start_value = 10000
 	value = start_value
 	bet_counter = 0
 	while True:
@@ -115,7 +115,7 @@ def main():
 			os.system('cls||clear')
 			percent = 100 - ((start_balance / balance) * 100)
 			bet_counter = 0
-			if percent > 100:
+			if percent > 5:
 				print(f'Получено прибыли {balance - start_balance} doge.')
 				break
 
