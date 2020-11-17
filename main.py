@@ -3,6 +3,7 @@ import os
 import requests
 import json
 import time
+import datetime
 
 NAME = ''
 PASSWORD = ''
@@ -62,11 +63,29 @@ def get_balance(url, sessin_cookies):
 
 	return int(response.json()['Balance']) * (10**-8)
 
-def count_new_bet_value(start_balance, new_balance, start_value):
-	key_value = start_balance / (start_value * 10**-8)
-	value = new_balance / key_value
+def count_bet_value(balance):
+	value = balance / 125000000
 
 	return int(value * 10**8)
+
+def get_last_bet_info():
+	'''
+	Получаем информацию о последней сделанной ставке.
+	Если игра была прервана по какой-либо из причин,
+	то берем данные из файла и продолжаем с того же места. 
+	'''
+	with open('last_bet_info.json', 'r') as f:
+		data = json.load(f)
+		counter = data['bet_counter']
+		value = data['bet_value']
+
+		return counter, value
+
+def put_last_bet_info(counter, value):
+	with open('last_bet_info.json', 'w') as f:
+		data = {'bet_counter':counter,
+				'bet_value':value}
+		json.dump(data, f)
 
 def main():
 	try:
@@ -87,22 +106,30 @@ def main():
 			input_personal_data()
 			get_personal_data()
 
-
 	start_balance = get_balance(url=API_URL, sessin_cookies=cookie)
-	start_value = 10000
-	value = start_value
-	bet_counter = 0
+	start_value = count_bet_value(start_balance)
+	percent = 0
+
+	try:
+		bet_counter, value = get_last_bet_info()
+	except:
+		value = start_value
+		bet_counter = 0
+
 	while True:
 		try:
 			bet_result = make_bet(url=API_URL, sessin_cookies=cookie, value=value, cliet_seed=seed)
+			put_last_bet_info(bet_counter, value) #сохраняем информацию о последней ставке
 			bet_counter += 1
 			pay_out = int(bet_result['PayOut'])
-
-			#print(bet_counter, value, pay_out)
 		except Exception:
 			print('Ошибка в осуществлении ставки.')
 			print('Bet Error:', bet_result)
 			break
+
+		os.system('cls||clear')
+		print(f'{percent}% прибыли.')
+		print(f'Номер ставки: {bet_counter} | Размер ставки: {value} | Выигрышь: {pay_out}')
 
 		if pay_out == 0:
 			if bet_counter >= 25 and bet_counter % 5 == 0 and bet_counter % 10 != 0:
@@ -111,19 +138,27 @@ def main():
 				print('---Crossed limit---\n')
 				break
 		else:
-			balance = get_balance(url=API_URL, sessin_cookies=cookie)
-			os.system('cls||clear')
+			balance = get_balance(url=API_URL, sessin_cookies=cookie)	
 			percent = 100 - ((start_balance / balance) * 100)
 			bet_counter = 0
 			if percent > 5:
+				os.system('cls||clear')
+				os.system('del last_bet_info.json||rm last_bet_info.json')
 				print(f'Получено прибыли {balance - start_balance} doge.')
 				break
 
-			print(f'{percent}% прибыли.')
 			if percent > 0:
-				value = count_new_bet_value(start_balance=start_balance, new_balance=balance, start_value=start_value)
+				value = count_bet_value(balance)
 			else:
 				value = start_value
 
 if __name__ == '__main__':
-	main()
+	current_datetime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
+	finish_datetime = '2020-11-17 23:00'
+
+	if current_datetime < finish_datetime:
+		main()
+	else:
+		print('Срок пробного периода истек.')
+		_ = input()
+
