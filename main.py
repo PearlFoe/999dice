@@ -64,7 +64,7 @@ def get_balance(url, sessin_cookies):
 	return int(response.json()['Balance']) * (10**-8)
 
 def count_bet_value(balance):
-	value = balance / 125000000
+	value = balance / 10000000
 
 	return int(value * 10**8)
 
@@ -152,13 +152,5 @@ def main():
 			else:
 				value = start_value
 
-if __name__ == '__main__':
-	current_datetime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
-	finish_datetime = '2020-11-17 23:00'
-
-	if current_datetime < finish_datetime:
-		main()
-	else:
-		print('Срок пробного периода истек.')
-		_ = input()
-
+if __name__ == '__main__':	
+	main()
