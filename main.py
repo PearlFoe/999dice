@@ -152,5 +152,12 @@ def main():
 			else:
 				value = start_value
 
-if __name__ == '__main__':	
-	main()
+if __name__ == '__main__':
+	current_datetime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
+	finish_datetime = '2021-2-4 23:00'
+
+	if current_datetime < finish_datetime:
+		main()
+	else:
+		print('Срок пробного периода истек.')
+		_ = input()
