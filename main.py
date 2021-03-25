@@ -1,3 +1,4 @@
+from loguru import logger
 import sys
 import os
 import requests
@@ -64,7 +65,7 @@ def get_balance(url, sessin_cookies):
 	return int(response.json()['Balance']) * (10**-8)
 
 def count_bet_value(balance):
-	value = balance / 14000000
+	value = balance * 10**-4 - balance * 10**-4 * 0.60
 
 	return int(value * 10**8)
 
@@ -87,7 +88,20 @@ def put_last_bet_info(counter, value):
 				'bet_value':value}
 		json.dump(data, f)
 
+def count_bet_ammount_limit(balance):
+	percent = 0.8
+	bet_sum = 0
+	bet_value = count_bet_value(balance)
+	for bet_counter in range(500):
+		if bet_counter >= 25 and bet_counter % 5 == 0 and bet_counter % 10 != 0:
+			bet_value *= 2
+		bet_sum += bet_value * 10**-8
+		if bet_sum >= balance * percent:
+			return bet_counter
+
 def main():
+	logger.add('main_log_file.log', format='{time} {level} {message}', level='INFO')
+
 	try:
 		get_personal_data()
 	except:
@@ -109,27 +123,36 @@ def main():
 	start_balance = get_balance(url=API_URL, sessin_cookies=cookie)
 	start_value = count_bet_value(start_balance)
 	percent = 0
+	current_balance = start_balance
+
+	logger.info(f'Logged into account. Start balance = {start_balance}')
 
 	try:
 		bet_counter, value = get_last_bet_info()
-	except:
+	except Exception:
 		value = start_value
 		bet_counter = 0
 
 	while True:
 		try:
 			bet_result = make_bet(url=API_URL, sessin_cookies=cookie, value=value, cliet_seed=seed)
-			put_last_bet_info(bet_counter, value) #сохраняем информацию о последней ставке
+			#put_last_bet_info(bet_counter, value) #сохраняем информацию о последней ставке
 			bet_counter += 1
 			pay_out = int(bet_result['PayOut'])
-		except Exception:
+		except (ValueError, KeyError) as e:
 			print('Ошибка в осуществлении ставки.')
 			print('Bet Error:', bet_result)
+			logger.error(f'Bet error: {bet_result}')
 			break
 
 		os.system('cls||clear')
-		print(f'{percent}% прибыли.')
-		print(f'Номер ставки: {bet_counter} | Размер ставки: {value} | Выигрышь: {pay_out}')
+		print(f'{round(percent, 5)}% прибыли.')
+		print(f'Номер ставки: {bet_counter} | Размер ставки: {value} | Выигрышь: {round(pay_out * 10**-8, 5)}')
+
+		if bet_counter >= count_bet_ammount_limit(current_balance):
+			bet_counter = 0
+			value = count_bet_value(current_balance)
+			logger.warning(f'Crossed limit with bet counter = {bet_counter}')
 
 		if pay_out == 0:
 			if bet_counter >= 25 and bet_counter % 5 == 0 and bet_counter % 10 != 0:
@@ -138,26 +161,25 @@ def main():
 				print('---Crossed limit---\n')
 				break
 		else:
-			balance = get_balance(url=API_URL, sessin_cookies=cookie)	
-			percent = 100 - ((start_balance / balance) * 100)
+			current_balance = get_balance(url=API_URL, sessin_cookies=cookie)
+			percent = 100 - ((start_balance / current_balance) * 100)
+			if bet_counter > 100:
+				logger.info(f'Got big payout ({pay_out}) on {bet_counter} bet.')
+
 			bet_counter = 0
-			if percent > 5:
+			'''
+			if percent > 50:
 				os.system('cls||clear')
 				os.system('del last_bet_info.json||rm last_bet_info.json')
 				print(f'Получено прибыли {balance - start_balance} doge.')
 				break
+			'''
 
 			if percent > 0:
-				value = count_bet_value(balance)
+				value = count_bet_value(current_balance)
 			else:
 				value = start_value
 
 if __name__ == '__main__':
-	current_datetime = datetime.datetime.now().strftime('%Y-%m-%d %H:%M')
-	finish_datetime = '2021-2-4 23:00'
+	main()
 
-	if current_datetime < finish_datetime:
-		main()
-	else:
-		print('Срок пробного периода истек.')
-		_ = input()
