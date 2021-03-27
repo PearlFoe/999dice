@@ -12,6 +12,8 @@ PASSWORD = ''
 API_KEY = ''
 API_URL = 'https://www.999dice.com/api/web.aspx'
 
+logger.add('main_log_file.log', format='{time} {level} {message}', level='INFO')
+
 def input_personal_data():
 	NAME = input('Введите имя пользователя: ')
 	PASSWORD = input('Введите пароль: ')
@@ -99,9 +101,8 @@ def count_bet_ammount_limit(balance):
 		if bet_sum >= balance * percent:
 			return bet_counter
 
+@logger.catch
 def main():
-	logger.add('main_log_file.log', format='{time} {level} {message}', level='INFO')
-
 	try:
 		get_personal_data()
 	except:
@@ -149,8 +150,9 @@ def main():
 		print(f'{round(percent, 5)}% прибыли.')
 		print(f'Номер ставки: {bet_counter} | Размер ставки: {value} | Выигрышь: {round(pay_out * 10**-8, 5)}')
 
-		if bet_counter >= count_bet_ammount_limit(current_balance):
+		if bet_counter >= count_bet_ammount_limit(current_balance) - 1:
 			bet_counter = 0
+			current_balance = get_balance(url=API_URL, sessin_cookies=cookie)
 			value = count_bet_value(current_balance)
 			logger.warning(f'Crossed limit with bet counter = {bet_counter}')
 
