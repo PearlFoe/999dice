@@ -67,7 +67,7 @@ def get_balance(url, sessin_cookies):
 	return int(response.json()['Balance']) * (10**-8)
 
 def count_bet_value(balance):
-	value = balance * 10**-4 - balance * 10**-4 * 0.60
+	value = balance * 10**-3 - balance * 10**-3 * 0.60
 
 	return int(value * 10**8)
 
@@ -151,10 +151,10 @@ def main():
 		print(f'Номер ставки: {bet_counter} | Размер ставки: {value} | Выигрышь: {round(pay_out * 10**-8, 5)}')
 
 		if bet_counter >= count_bet_ammount_limit(current_balance) - 1:
-			bet_counter = 0
 			current_balance = get_balance(url=API_URL, sessin_cookies=cookie)
 			value = count_bet_value(current_balance)
 			logger.warning(f'Crossed limit with bet counter = {bet_counter}')
+			bet_counter = 0
 
 		if pay_out == 0:
 			if bet_counter >= 25 and bet_counter % 5 == 0 and bet_counter % 10 != 0:
