@@ -148,7 +148,7 @@ def main():
 
 		os.system('cls||clear')
 		print(f'{round(percent, 5)}% | {round(current_balance - start_balance, 5)} | {round(current_balance, 5)}')
-		print(f'Номер ставки: {bet_counter} | Размер ставки: {value} | Выигрышь: {round(pay_out, 5)}')
+		print(f'Номер ставки: {bet_counter} | Размер ставки: {value} | Выигрышь: {round(pay_out * 10**-8, 5)}')
 
 		if bet_counter >= count_bet_ammount_limit(current_balance) - 1:	
 			previous_balance = current_balance		
