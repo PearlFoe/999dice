@@ -67,7 +67,7 @@ def get_balance(url, sessin_cookies):
 	return int(response.json()['Balance']) * (10**-8)
 
 def count_bet_value(balance):
-	value = balance * 10**-5 + balance * 10**-5 * 0.70
+	value = balance * 10**-4# + balance * 10**-5 * 0.70
 
 	return int(value * 10**8)
 
@@ -147,21 +147,19 @@ def main():
 			break
 
 		os.system('cls||clear')
-		print(f'{round(percent, 5)}% прибыли.')
-		print(f'Номер ставки: {bet_counter} | Размер ставки: {value} | Выигрышь: {round(pay_out * 10**-8, 5)}')
+		print(f'{round(percent, 5)}% | {round(current_balance - start_balance, 5)} | {round(current_balance, 5)}')
+		print(f'Номер ставки: {bet_counter} | Размер ставки: {value} | Выигрышь: {round(pay_out, 5)}')
 
-		if bet_counter >= count_bet_ammount_limit(current_balance) - 1:
+		if bet_counter >= count_bet_ammount_limit(current_balance) - 1:	
+			previous_balance = current_balance		
 			current_balance = get_balance(url=API_URL, sessin_cookies=cookie)
+			logger.warning(f'Crossed limit with bet counter = {bet_counter}. Previous balance = {previous_balance}. New balance = {current_balance}.')
 			value = count_bet_value(current_balance)
-			logger.warning(f'Crossed limit with bet counter = {bet_counter}')
 			bet_counter = 0
 
 		if pay_out == 0:
 			if bet_counter >= 25 and bet_counter % 5 == 0 and bet_counter % 10 != 0:
 				value *= 2
-			elif bet_counter == 250:
-				print('---Crossed limit---\n')
-				break
 		else:
 			current_balance = get_balance(url=API_URL, sessin_cookies=cookie)
 			percent = 100 - ((start_balance / current_balance) * 100)
