@@ -67,7 +67,7 @@ def get_balance(url, sessin_cookies):
 	return int(response.json()['Balance']) * (10**-8)
 
 def count_bet_value(balance):
-	value = balance * 10**-4# + balance * 10**-5 * 0.70
+	value = balance * 10**-5 - balance * 10**-5 * 0.5
 
 	return int(value * 10**8)
 
