@@ -12,6 +12,7 @@ PASSWORD = ''
 API_KEY = ''
 API_URL = 'https://www.999dice.com/api/web.aspx'
 
+#test comment line
 logger.add('main_log_file.log', format='{time} {level} {message}', level='INFO')
 
 def input_personal_data():
