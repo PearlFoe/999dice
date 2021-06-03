@@ -68,7 +68,7 @@ def get_balance(url, sessin_cookies):
 	return int(response.json()['Balance']) * (10**-8)
 
 def count_bet_value(balance):
-	value = balance * 10**-5 - balance * 10**-5 * 0.5
+	value = balance * 10**-5 - balance * 10**-5 * 0.2
 
 	return int(value * 10**8)
 
@@ -148,8 +148,8 @@ def main():
 			break
 
 		os.system('cls||clear')
-		print(f'{round(percent, 5)}% | {round(current_balance - start_balance, 5)} | {round(current_balance, 5)}')
-		print(f'Номер ставки: {bet_counter} | Размер ставки: {value} | Выигрышь: {round(pay_out * 10**-8, 5)}')
+		print(f'{float(percent):2.5}% | {(current_balance - start_balance):5.5} | {current_balance:2.5}')
+		print(f'Номер ставки: {bet_counter} | Размер ставки: {value} | Выигрышь: {(pay_out * 10**-8):2.5}')
 
 		if bet_counter >= count_bet_ammount_limit(current_balance) - 1:	
 			previous_balance = current_balance		
